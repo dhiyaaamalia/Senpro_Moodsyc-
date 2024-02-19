@@ -1,6 +1,6 @@
 # Senpro_Moodsyc-
 
-Moodsyc merupakan web yang dapat memberikan rekomendasi musik yang sesuai dengan sentimen atau perasaan yang sedang dirasakan oleh pengguna melalui text
+**Moodsyc** merupakan web yang dapat memberikan rekomendasi musik yang sesuai dengan sentimen atau perasaan yang sedang dirasakan oleh pengguna melalui text
 
 Nama Kelompok : KPPS 
 Kertua Kelompok : Franciscus Marselino
