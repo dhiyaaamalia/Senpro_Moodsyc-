@@ -4,7 +4,8 @@
 
 Nama Kelompok : KPPS 
 <br>
-Kertua Kelompok : 
-Anggota 1 : Dhiyaa Amalia Putri
-Anggota 2 : Farhan Franaka
-
+Ketua Kelompok : 
+<br>
+Anggota 1 : Dhiyaa Amalia Putri <br>
+Anggota 2 : Farhan Franaka <br>
+Anggota 3 : Franciscus Marselino Handoyo
