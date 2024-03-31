@@ -11,12 +11,62 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
+import { setUser } from "@/lib/features/auth/authSlice";
+import {
+  getAccessToken,
+  redirectToAuthCodeFlow,
+} from "@/lib/spotify/authWithCodePcke";
+import { fetchProfile } from "@/lib/spotify/spotify";
+import { useAppDispatch, useAppSelector } from "@/lib/store";
+import { Icon } from "@iconify/react/dist/iconify.js";
 import { TabsTrigger } from "@radix-ui/react-tabs";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 function AuthForm() {
+  const [isLogin, setIsLogin] = useState(false);
+  const [profile, setProfile] = useState<any>();
+
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const user = useAppSelector((state) => state.auth.user);
+
+  const fetchData = async (code: string) => {
+    const accessToken = await getAccessToken(code);
+    if (accessToken) {
+      const profile = await fetchProfile(accessToken);
+      localStorage.setItem("profile", JSON.stringify(profile));
+      if (profile) {
+        dispatch(setUser(profile));
+        setIsLogin(true);
+        setProfile(profile);
+      }
+    }
+  };
+
+  const handleLoginSpotify = () => {
+    redirectToAuthCodeFlow();
+  };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const code = searchParams.get("code");
+      if (code) {
+        fetchData(code);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      router.push("/profile");
+    }
+  }, [user]);
+
   return (
     <div className="relative w-full lg:w-[40%] px-5 lg:px-0 h-screen flex items-center justify-center top-[-150px] lg:top-0">
-      <Tabs defaultValue="signin" className="w-[400px] shadow-lg">
+      <Tabs defaultValue="signin" className="w-[300px] ">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger
             value="signin"
@@ -54,8 +104,15 @@ function AuthForm() {
                 />
               </div>
             </CardContent>
-            <CardFooter className="flex items-center justify-center">
+            <CardFooter className="flex flex-col items-center justify-center">
               <Button className="w-1/3">Login</Button>
+              <p className="text-xs my-3">Or login with</p>
+              <button onClick={handleLoginSpotify}>
+                <Icon
+                  icon="logos:spotify-icon"
+                  className="w-10 h-10 cursor-pointer"
+                />
+              </button>
             </CardFooter>
           </Card>
         </TabsContent>
