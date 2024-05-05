@@ -36,6 +36,7 @@ function AuthForm() {
     if (accessToken) {
       const profile = await fetchProfile(accessToken);
       localStorage.setItem("profile", JSON.stringify(profile));
+      localStorage.setItem("accessToken", accessToken);
       if (profile) {
         dispatch(setUser(profile));
         setIsLogin(true);
@@ -53,6 +54,7 @@ function AuthForm() {
       const searchParams = new URLSearchParams(window.location.search);
       const code = searchParams.get("code");
       if (code) {
+        localStorage.setItem("code", code);
         fetchData(code);
       }
     }

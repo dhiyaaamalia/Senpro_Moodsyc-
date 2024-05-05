@@ -16,6 +16,7 @@ const ProfilePage = () => {
   useEffect(() => {
     if (userState) {
       setUser(userState);
+      console.log(userState);
     } else {
       router.push("/auth");
     }
@@ -51,7 +52,7 @@ const ProfilePage = () => {
                     className="rounded-full w-20 h-20"
                   />
                 )}
-                <p>{user.display_name}</p>
+                <p className="font-bold text-xl">{user.display_name}</p>
                 <p>{user.email}</p>
               </div>
             </>
