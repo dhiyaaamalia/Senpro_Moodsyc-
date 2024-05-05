@@ -16,9 +16,12 @@ const Navbar = () => {
   const input = useAppSelector((state) => state.data.input);
   const userState = useAppSelector((state) => state.auth.user);
 
-  const handleClear = () => {
-    dispatch(clearState());
+  const handleClear = async () => {
+    await dispatch(clearState());
+    window.location.reload();
   };
+
+  const handleToPlaylist = user ? "/playlist" : "/auth";
 
   useEffect(() => {
     setInputValue(input);
@@ -38,14 +41,14 @@ const Navbar = () => {
         <div>
           {user ? (
             <div className="flex gap-5 items-center">
-              <Link href={"/profile"}>
+              <Link href={handleToPlaylist}>
                 <Button className="flex gap-5">
                   <Icon icon="iconamoon:profile-fill" />
                   <p className="font-poppins text-lg">{user.display_name}</p>
                 </Button>
               </Link>
               <div
-                className="gap-1 rounded-full underline"
+                className="gap-1 rounded-full underline cursor-pointer"
                 onClick={handleClear}
               >
                 Logout
@@ -62,10 +65,12 @@ const Navbar = () => {
         </div>
       </div>
       <div className="flex justify-between">
-        <Button className="gap-1 rounded-full mt-5">
-          <Icon icon="mingcute:playlist-fill" />
-          <p className="font-poppins text-lg">Playlist</p>
-        </Button>
+        <Link href="/playlist">
+          <Button className="gap-1 rounded-full mt-5">
+            <Icon icon="mingcute:playlist-fill" />
+            <p className="font-poppins text-lg">Playlist</p>
+          </Button>
+        </Link>
         {inputValue && (
           <Button className="gap-1 rounded-full mt-5" onClick={handleClear}>
             Clear Input
