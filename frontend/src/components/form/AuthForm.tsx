@@ -31,12 +31,19 @@ function AuthForm() {
   const router = useRouter();
   const user = useAppSelector((state) => state.auth.user);
 
+  function saveTokenToLocalStorage(responseData: any) {
+    const expirationTime = Date.now() + responseData.expires_in * 1000;
+    localStorage.setItem("accessToken", responseData.access_token);
+    localStorage.setItem("tokenExpiration", expirationTime.toString());
+    localStorage.setItem("refreshToken", responseData.refresh_token);
+  }
+
   const fetchData = async (code: string) => {
-    const accessToken = await getAccessToken(code);
-    if (accessToken) {
-      const profile = await fetchProfile(accessToken);
+    const response = await getAccessToken(code);
+    if (response) {
+      saveTokenToLocalStorage(response);
+      const profile = await fetchProfile(response.access_token);
       localStorage.setItem("profile", JSON.stringify(profile));
-      localStorage.setItem("accessToken", accessToken);
       if (profile) {
         dispatch(setUser(profile));
         setIsLogin(true);

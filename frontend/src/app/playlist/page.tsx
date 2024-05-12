@@ -1,5 +1,11 @@
 import PlaylistList from "@/components/List/Playlist";
 import Navbar from "@/components/Navbar";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Playlist",
+  description: "Playlist page for users to see their playlist.",
+};
 
 const PlaylistPage = () => {
   return (
