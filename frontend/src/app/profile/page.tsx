@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/lib/store";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import Link from "next/link";
@@ -43,7 +42,7 @@ const ProfilePage = () => {
                   <img
                     src={user.images[0].url}
                     alt="profile"
-                    className="rounded-full w-20 h-20"
+                    className="rounded-full w-32 h-32"
                   />
                 ) : (
                   <img
