@@ -11,8 +11,8 @@ nltk.download('punkt')
 app = Flask(__name__)
 
 # Spotify API credentials
-client_id = '7b6e0c37a32f40b88acbe29807c880ba'
-client_secret = 'd4f2e1d468b543a898821f1d6919cdd5'
+client_id = 'my_id'
+client_secret = 'my_secret'
 
 def fixSingkatan(text):
     text = re.sub(r'\b(aj|ae|aja)\b', 'saja', text)
