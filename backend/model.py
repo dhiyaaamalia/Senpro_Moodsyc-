@@ -4,6 +4,14 @@ nltk.download('punkt')
 
 import re
 from transformers import pipeline
+import os
+
+import requests
+import base64
+
+# Spotify API credentials
+client_id = '7b6e0c37a32f40b88acbe29807c880ba'
+client_secret = 'd4f2e1d468b543a898821f1d6919cdd5'
 
 def fixSingkatan(text):
     text = re.sub(r'\b(aj|ae|aja)\b', 'saja', text)
@@ -59,7 +67,10 @@ def fixSingkatan(text):
 
 def preprocess(input_text):
     # Read stopwords from the text file
-    with open('stopwords-id.txt', 'r') as file:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    stopwords_path = os.path.join(script_dir, 'stopwords-id.txt')
+
+    with open(stopwords_path, 'r') as file:
         custom_stopwords = file.read().splitlines()
 
     # Tokenize the text
@@ -75,12 +86,74 @@ def preprocess(input_text):
 
     s = re.sub(r'[^\w\s]','',filtered_text)
     s = re.sub('  +', ' ', s)
-    s = s.lower()
+    s = s.lower().strip()
 
     return s
 
-def predict(input_key):
+def predict_emotion(input_key):
     nlp = pipeline("text-classification", model="thoriqfy/indobert-emotion-classification")
     emotion = nlp(input_key)
+    emotion = emotion[0]['label']
+    emotion = emotion.lower()
 
     return emotion
+
+def get_access_token(client_id, client_secret):
+    auth_string = f"{client_id}:{client_secret}"
+    auth_bytes = auth_string.encode('ascii')
+    auth_base64 = base64.b64encode(auth_bytes).decode('ascii')
+
+    headers = {
+        'Authorization': f'Basic {auth_base64}',
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    data = {'grant_type': 'client_credentials'}
+
+    response = requests.post('https://accounts.spotify.com/api/token', headers=headers, data=data)
+    return response.json().get('access_token')
+
+def search_playlists(query, genre, token):
+    url = 'https://api.spotify.com/v1/search'
+    headers = {
+        'Authorization': f'Bearer {token}'
+    }
+    params = {
+        'q': query + '%20genre:' + genre,
+        'type': 'playlist',
+        'limit': 1  # Number of results to return
+    }
+
+    response = requests.get(url, headers=headers, params=params)
+    return response.json()
+
+# Get the access token
+access_token = get_access_token(client_id, client_secret)
+
+# Playlist name with spaces
+input = input("Masukkan teks: ")
+playlist_name = preprocess(input)
+
+# Replace spaces with %20
+encoded_playlist_name = re.sub(r'\s', '%20', playlist_name)
+
+emotion_genre_mapping = {
+    "sadness": ["blues", "classical", "acoustic", "soul", "indie"],
+    "anger": ["metal", "rock", "punk", "hardcore", "industrial"],
+    "love": ["pop", "r&b", "love songs", "ballads", "jazz"],
+    "fear": ["darkwave", "gothic", "horror", "ambient", "soundtrack"],
+    "happy": ["pop", "dance", "electronic", "reggae", "funk", "disco"]
+}
+
+emotion = predict_emotion(playlist_name)
+genre = emotion_genre_mapping[emotion][0]
+
+# Search for playlists
+response = search_playlists(encoded_playlist_name, genre, access_token)
+
+# Extract the playlist URL
+if response['playlists']['items']:
+    for playlist in response['playlists']['items']:
+            playlist_url = playlist['external_urls']['spotify']
+            print(f"Playlist URL: {playlist_url}")
+else:
+    print("No playlist found.")
