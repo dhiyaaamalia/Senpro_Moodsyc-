@@ -1,13 +1,14 @@
+from flask import Flask, request, jsonify, render_template
+import os
+import requests
+import base64
+import re
+from transformers import pipeline
 import nltk
 from nltk.tokenize import word_tokenize
 nltk.download('punkt')
 
-import re
-from transformers import pipeline
-import os
-
-import requests
-import base64
+app = Flask(__name__)
 
 # Spotify API credentials
 client_id = '7b6e0c37a32f40b88acbe29807c880ba'
@@ -126,34 +127,59 @@ def search_playlists(query, genre, token):
     response = requests.get(url, headers=headers, params=params)
     return response.json()
 
-# Get the access token
-access_token = get_access_token(client_id, client_secret)
+def search_playlist_tracks(playlist_id, token):
+    url = f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks'
+    headers = {
+        'Authorization': f'Bearer {token}'
+    }
+    response = requests.get(url, headers=headers)
+    return response.json()
 
-# Playlist name with spaces
-input = input("Masukkan teks: ")
-playlist_name = preprocess(input)
+@app.route('/search', methods=['GET'])
+def search_song_titles():
+    input_text = request.args.get('query')
+    playlist_name = preprocess(input_text)
 
-# Replace spaces with %20
-encoded_playlist_name = re.sub(r'\s', '%20', playlist_name)
+    access_token = get_access_token(client_id, client_secret)
 
-emotion_genre_mapping = {
-    "sadness": ["blues", "classical", "acoustic", "soul", "indie"],
-    "anger": ["metal", "rock", "punk", "hardcore", "industrial"],
-    "love": ["pop", "r&b", "love songs", "ballads", "jazz"],
-    "fear": ["darkwave", "gothic", "horror", "ambient", "soundtrack"],
-    "happy": ["pop", "dance", "electronic", "reggae", "funk", "disco"]
-}
+    # Replace spaces with %20
+    encoded_playlist_name = re.sub(r'\s', '%20', playlist_name)
 
-emotion = predict_emotion(playlist_name)
-genre = emotion_genre_mapping[emotion][0]
+    emotion_genre_mapping = {
+        "sadness": ["blues", "classical", "acoustic", "soul", "indie"],
+        "anger": ["metal", "rock", "punk", "hardcore", "industrial"],
+        "love": ["pop", "r&b", "love songs", "ballads", "jazz"],
+        "fear": ["darkwave", "gothic", "horror", "ambient", "soundtrack"],
+        "happy": ["pop", "dance", "electronic", "reggae", "funk", "disco"]
+    }
 
-# Search for playlists
-response = search_playlists(encoded_playlist_name, genre, access_token)
+    emotion = predict_emotion(playlist_name)
+    genre = emotion_genre_mapping[emotion][0]
 
-# Extract the playlist URL
-if response['playlists']['items']:
-    for playlist in response['playlists']['items']:
-            playlist_url = playlist['external_urls']['spotify']
-            print(f"Playlist URL: {playlist_url}")
-else:
-    print("No playlist found.")
+    # Search for playlists
+    response = search_playlists(encoded_playlist_name, genre, access_token)
+
+    # Extract the playlist IDs
+    playlist_ids = []
+    if response['playlists']['items']:
+        for playlist in response['playlists']['items']:
+            playlist_ids.append(playlist['id'])
+
+    # Get tracks from each playlist
+    song_titles = []
+    for playlist_id in playlist_ids:
+        playlist_tracks = search_playlist_tracks(playlist_id, access_token)
+        if 'items' in playlist_tracks:
+            for track in playlist_tracks['items']:
+                song_title = track['track']['name']
+                song_titles.append(song_title)
+
+    # Return the song titles
+    if song_titles:
+        return jsonify(song_titles)
+    else:
+        return jsonify({"message": "No songs found in the playlists."})
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
