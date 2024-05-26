@@ -6,18 +6,24 @@ import {
 } from "./authWithCodePcke";
 import { toast } from "@/components/ui/use-toast";
 
-function isTokenExpired() {
-  let expirationTime = localStorage.getItem("tokenExpiration");
+export function isTokenExpired() {
+  let expirationTime = localStorage.getItem("tokenExpiration") as string;
   return expirationTime && Date.now() > parseInt(expirationTime);
 }
 
 export async function fetchProfile(accessToken: string) {
-  const result = await fetch("https://api.spotify.com/v1/me", {
-    method: "GET",
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-
-  return await result.json();
+  if (isTokenExpired()) {
+    await getRefreshToken();
+  }
+  try {
+    const response = await axios.get("https://api.spotify.com/v1/me", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    throw error;
+  }
 }
 
 export async function fetchUserPlaylist() {
@@ -95,4 +101,44 @@ export async function createPlaylist(
     .catch((error) => {
       return error;
     });
+}
+
+export async function searchSong(query: string) {
+  if (isTokenExpired()) {
+    await getRefreshToken();
+  }
+  const accessToken = localStorage.getItem("accessToken");
+  try {
+    const response = await axios.get(
+      `https://api.spotify.com/v1/search?q=${query}&type=track`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function getTrack(id: string) {
+  if (isTokenExpired()) {
+    await getRefreshToken();
+  }
+  const accessToken = localStorage.getItem("accessToken");
+  try {
+    const response = await axios.get(
+      `https://api.spotify.com/v1/tracks/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 }

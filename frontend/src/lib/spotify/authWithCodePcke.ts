@@ -15,7 +15,7 @@ export async function redirectToAuthCodeFlow() {
   localStorage.setItem("verifier", verifier);
 
   var scope =
-    "user-read-private user-read-email  playlist-read-private  playlist-modify-private playlist-modify-public";
+    "streaming user-modify-playback-state user-read-private user-read-email playlist-read-private  playlist-modify-private playlist-modify-public";
 
   const params = new URLSearchParams();
   params.append("client_id", clientId);
