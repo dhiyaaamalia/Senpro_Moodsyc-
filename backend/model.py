@@ -8,11 +8,9 @@ import nltk
 from nltk.tokenize import word_tokenize
 nltk.download('punkt')
 
+
 app = Flask(__name__)
 
-# Spotify API credentials
-client_id = 'my_id'
-client_secret = 'my_secret'
 
 def fixSingkatan(text):
     text = re.sub(r'\b(aj|ae|aja)\b', 'saja', text)
@@ -134,52 +132,3 @@ def search_playlist_tracks(playlist_id, token):
     }
     response = requests.get(url, headers=headers)
     return response.json()
-
-@app.route('/search', methods=['GET'])
-def search_song_titles():
-    input_text = request.args.get('query')
-    playlist_name = preprocess(input_text)
-
-    access_token = get_access_token(client_id, client_secret)
-
-    # Replace spaces with %20
-    encoded_playlist_name = re.sub(r'\s', '%20', playlist_name)
-
-    emotion_genre_mapping = {
-        "sadness": ["blues", "classical", "acoustic", "soul", "indie"],
-        "anger": ["metal", "rock", "punk", "hardcore", "industrial"],
-        "love": ["pop", "r&b", "love songs", "ballads", "jazz"],
-        "fear": ["darkwave", "gothic", "horror", "ambient", "soundtrack"],
-        "happy": ["pop", "dance", "electronic", "reggae", "funk", "disco"]
-    }
-
-    emotion = predict_emotion(playlist_name)
-    genre = emotion_genre_mapping[emotion][0]
-
-    # Search for playlists
-    response = search_playlists(encoded_playlist_name, genre, access_token)
-
-    # Extract the playlist IDs
-    playlist_ids = []
-    if response['playlists']['items']:
-        for playlist in response['playlists']['items']:
-            playlist_ids.append(playlist['id'])
-
-    # Get tracks from each playlist
-    song_titles = []
-    for playlist_id in playlist_ids:
-        playlist_tracks = search_playlist_tracks(playlist_id, access_token)
-        if 'items' in playlist_tracks:
-            for track in playlist_tracks['items']:
-                song_title = track['track']['name']
-                song_titles.append(song_title)
-
-    # Return the song titles
-    if song_titles:
-        return jsonify(song_titles)
-    else:
-        return jsonify({"message": "No songs found in the playlists."})
-
-
-if __name__ == '__main__':
-    app.run(debug=True)

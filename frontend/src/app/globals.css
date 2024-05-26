@@ -66,3 +66,15 @@
 .tab-trigger:focus {
   background: white;
 }
+
+.chat::-webkit-scrollbar {
+  width: 0.5rem;
+}
+
+.chat::-webkit-scrollbar-thumb {
+  background: var(--border);
+}
+
+.chat::-webkit-scrollbar-track {
+  background: var(--background);
+}

@@ -4,16 +4,16 @@ import Logo from "@/assets/image/Logo.svg";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/lib/store";
-import { clearState } from "@/lib/features/data/dataSlice";
+import { Chat, clearState } from "@/lib/features/data/dataSlice";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 
 const Navbar = () => {
   const dispatch = useAppDispatch();
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState<Chat[]>([]);
   const [user, setUser] = useState<any>(null);
 
-  const input = useAppSelector((state) => state.data.input);
+  const chat = useAppSelector((state) => state.data.chat);
   const userState = useAppSelector((state) => state.auth.user);
 
   const handleClear = async () => {
@@ -24,8 +24,8 @@ const Navbar = () => {
   const handleToPlaylist = user ? "/playlist" : "/auth";
 
   useEffect(() => {
-    setInputValue(input);
-  }, [input]);
+    setInputValue(chat);
+  }, [chat]);
 
   useEffect(() => {
     setUser(userState);
@@ -71,11 +71,11 @@ const Navbar = () => {
             <p className="font-poppins text-lg">Playlist</p>
           </Button>
         </Link>
-        {inputValue && (
+        {inputValue.length > 0 ? (
           <Button className="gap-1 rounded-full mt-5" onClick={handleClear}>
             Clear Input
           </Button>
-        )}
+        ) : null}
       </div>
     </div>
   );
