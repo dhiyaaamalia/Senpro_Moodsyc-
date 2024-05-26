@@ -26,7 +26,7 @@ import { createPlaylist } from "@/lib/spotify/spotify";
 import { toast } from "../ui/use-toast";
 import { Toaster } from "../ui/toaster";
 
-export function CreatePlaylistDialog() {
+export function CreatePlaylistDialog({ setFetchStatus }: any) {
   const [title, setTitle] = useState<string>("");
   const [visibility, setVisibility] = useState<boolean>(false);
   const [description, setDescription] = useState<string>("");
@@ -37,11 +37,11 @@ export function CreatePlaylistDialog() {
       JSON.parse(localStorage.getItem("profile")!);
 
     await createPlaylist(user.id, title, visibility, description);
+    setFetchStatus(false);
   };
 
   return (
     <Dialog>
-      <Toaster />
       <DialogTrigger asChild>
         <Button>
           <Icon

@@ -7,6 +7,8 @@ import { useAppDispatch, useAppSelector } from "@/lib/store";
 import { Chat, clearState } from "@/lib/features/data/dataSlice";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import Logout from "./Dialog/LogoutDialog";
 
 const Navbar = () => {
   const dispatch = useAppDispatch();
@@ -15,6 +17,8 @@ const Navbar = () => {
 
   const chat = useAppSelector((state) => state.data.chat);
   const userState = useAppSelector((state) => state.auth.user);
+
+  const pathName = usePathname();
 
   const handleClear = async () => {
     await dispatch(clearState());
@@ -34,10 +38,12 @@ const Navbar = () => {
   return (
     <div className="w-full">
       <div className="flex gap-5 justify-between">
-        <div className="flex gap-5">
-          <Image src={Logo} alt="Moodsyc" />
-          <p className="font-stick text-[40px]">MOODSYC</p>
-        </div>
+        <Link href="/">
+          <div className="flex gap-5">
+            <Image src={Logo} alt="Moodsyc" />
+            <p className="font-stick text-[40px]">MOODSYC</p>
+          </div>
+        </Link>
         <div>
           {user ? (
             <div className="flex gap-5 items-center">
@@ -47,12 +53,11 @@ const Navbar = () => {
                   <p className="font-poppins text-lg">{user.display_name}</p>
                 </Button>
               </Link>
-              <div
-                className="gap-1 rounded-full underline cursor-pointer"
-                onClick={handleClear}
-              >
-                Logout
-              </div>
+              <Logout logout={handleClear}>
+                <div className="gap-1 rounded-full underline cursor-pointer">
+                  Logout
+                </div>
+              </Logout>
             </div>
           ) : (
             <Button className="gap-1 rounded-full mt-5">
@@ -71,11 +76,12 @@ const Navbar = () => {
             <p className="font-poppins text-lg">Playlist</p>
           </Button>
         </Link>
-        {inputValue.length > 0 ? (
-          <Button className="gap-1 rounded-full mt-5" onClick={handleClear}>
-            Clear Input
-          </Button>
-        ) : null}
+        {pathName == "/" &&
+          (inputValue.length > 0 ? (
+            <Button className="gap-1 rounded-full mt-5" onClick={handleClear}>
+              Clear Input
+            </Button>
+          ) : null)}
       </div>
     </div>
   );

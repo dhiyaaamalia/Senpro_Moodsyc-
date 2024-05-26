@@ -142,3 +142,51 @@ export async function getTrack(id: string) {
     throw error;
   }
 }
+
+export async function addSongToPlaylist(playlistId: any, trackUri: any) {
+  if (isTokenExpired()) {
+    await getRefreshToken();
+  }
+  const accessToken = localStorage.getItem("accessToken");
+  try {
+    const response = await axios.post(
+      `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+      {
+        uris: [trackUri],
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error adding song to playlist:", error);
+    throw error;
+  }
+}
+
+export async function removeSongFromPlaylist(playlistId: any, trackUri: any) {
+  if (isTokenExpired()) {
+    await getRefreshToken();
+  }
+  const accessToken = localStorage.getItem("accessToken");
+  try {
+    const response = await axios.delete(
+      `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        data: {
+          tracks: [{ uri: trackUri }],
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error adding song to playlist:", error);
+    throw error;
+  }
+}

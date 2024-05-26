@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,75 +9,114 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Icon } from "@iconify/react/dist/iconify.js";
-
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useState } from "react";
-import { createPlaylist } from "@/lib/spotify/spotify";
+import { useEffect, useState } from "react";
+import { addSongToPlaylist, fetchUserPlaylist } from "@/lib/spotify/spotify";
 import { toast } from "../ui/use-toast";
-import { Toaster } from "../ui/toaster";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
 
-export function AddToPlaylistDialog() {
-  const [title, setTitle] = useState<string>("");
-  const [visibility, setVisibility] = useState<boolean>(false);
-  const [description, setDescription] = useState<string>("");
+import { useRouter } from "next/navigation";
+import { useAppSelector } from "@/lib/store";
+import { CreatePlaylistDialog } from "../form/CreatePlaylistForm";
+import ConfirmDialog from "../Dialog/ConfirmDialog";
 
-  const handleCreatePlaylist = async () => {
-    const user =
-      localStorage.getItem("profile") &&
-      JSON.parse(localStorage.getItem("profile")!);
+export function AddToPlaylistDialog({ song }: any) {
+  const router = useRouter();
 
-    await createPlaylist(user.id, title, visibility, description);
+  const [fetchStatus, setFetchStatus] = useState(false);
+  const [playlist, setPlaylist] = useState<any>();
+
+  const [user, setUser] = useState<any>(null);
+  const userState = useAppSelector((state) => state.auth.user);
+
+  const fetchPlaylistList = async () => {
+    const playlist = await fetchUserPlaylist();
+    if (playlist) {
+      setPlaylist(playlist.items);
+    }
   };
+
+  const handleSubmit = async (playlistId: any, trackUri: any) => {
+    if (userState) {
+      let response = await addSongToPlaylist(playlistId, trackUri);
+
+      toast({
+        title: "Song added to playlist",
+        description: `Your song has been added to the playlist.`,
+      });
+    } else {
+      router.push("/auth");
+    }
+  };
+
+  useEffect(() => {
+    if (!fetchStatus) {
+      fetchPlaylistList();
+      setFetchStatus(true);
+    }
+  }, [fetchStatus]);
+
+  useEffect(() => {}, [userState]);
 
   return (
     <Dialog>
-      <Toaster />
       <DialogTrigger asChild>
-        <TooltipProvider>
+        <Button>
+          <Icon
+            className="bg-primary text-white rounded-lg w-[20px] h-[20px]"
+            icon="carbon:add-filled"
+          />
+        </Button>
+        {/* <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
-              <Button>
-                <Icon
-                  className="bg-primary text-white rounded-lg w-[20px] h-[20px]"
-                  icon="carbon:add-filled"
-                />
-              </Button>
             </TooltipTrigger>
             <TooltipContent>
               <p>Add to Playlist</p>
             </TooltipContent>
           </Tooltip>
-        </TooltipProvider>
+        </TooltipProvider> */}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create Playlist</DialogTitle>
+          <DialogTitle>
+            Add <span className="underline font-bold">{song.name}</span> to
+            Playlist
+          </DialogTitle>
           <DialogDescription>
-            Create a new playlist to add your favorite songs.
+            Add your favorite songs to your playlist.
           </DialogDescription>
         </DialogHeader>
-        <div></div>
+        {playlist?.map(
+          (item: any) =>
+            item.owner.display_name === user.display_name && (
+              <ConfirmDialog
+                playlist={item.name}
+                title={song.name}
+                submit={() => handleSubmit(item.id, song.trackUri)}
+              >
+                <div
+                  key={item.id}
+                  className="p-2 flex w-full px-5 gap-3 mb-5 cursor-pointer"
+                >
+                  <Icon
+                    className="bg-primary text-white rounded-lg w-[30px] h-[30px]"
+                    icon="mingcute:playlist-fill"
+                  />
+                  <p
+                    className={`font-poppins text-lg }
+                hover:underline
+                `}
+                  >
+                    {item.name}
+                  </p>
+                </div>
+              </ConfirmDialog>
+            )
+        )}
         <DialogFooter>
-          <Button onClick={handleCreatePlaylist} type="submit">
-            Create
-          </Button>
+          <div className="w-full items-center flex justify-center">
+            <CreatePlaylistDialog setFetchStatus={setFetchStatus} />
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
