@@ -1,32 +1,64 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
+export interface ChatContent {
+  name: string;
+  id: string;
+  image: string;
+  artist: string;
+  message: string;
+}
+export interface Chat {
+  type: string;
+  content: ChatContent[];
+}
+
 export interface IDataState {
-  input: string;
-  result: string;
+  chat: Chat[];
+  loading: boolean;
 }
 
 const initialState: IDataState = {
-  input: "",
-  result: "",
+  chat: [],
+  loading: false,
 };
 
 export const dataSlice = createSlice({
   name: "data",
   initialState,
   reducers: {
-    setInput: (state, action: PayloadAction<string>) => {
-      state.input = action.payload;
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
     },
-    setResult: (state, action: PayloadAction<string>) => {
-      state.result = action.payload;
+
+    addInput: (state, action: PayloadAction<string>) => {
+      state.chat.push({
+        type: "input",
+        content: [
+          {
+            name: action.payload,
+            id: "",
+            image: "",
+            artist: "",
+            message: "",
+          },
+        ],
+      });
     },
+
+    addResult: (state, action: PayloadAction<ChatContent[]>) => {
+      state.chat.push({
+        type: "result",
+        content: action.payload,
+      });
+    },
+
     clearState: (state) => {
       localStorage.clear();
-      state.input = "";
-      state.result = "";
+      state.chat = [];
     },
   },
 });
 
-export const { setInput, setResult, clearState } = dataSlice.actions;
+export const { addInput, addResult, setLoading, clearState } =
+  dataSlice.actions;
 export const dataReducer = dataSlice.reducer;

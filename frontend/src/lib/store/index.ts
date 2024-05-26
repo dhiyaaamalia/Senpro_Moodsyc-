@@ -8,7 +8,7 @@ import { authReducer } from "../features/auth/authSlice";
 const dataPersistConfig = {
   key: "data",
   storage: storage,
-  whitelist: ["input", "result"],
+  whitelist: ["chat"],
 };
 
 const authPersistConfig = {

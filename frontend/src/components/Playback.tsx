@@ -18,7 +18,6 @@ function WebPlayback() {
   const [isActive, setActive] = useState(false);
   const [player, setPlayer] = useState<any>(null);
   const [currentTrack, setCurrentTrack] = useState(null) as any;
-  const [track, setTrack] = useState(null) as any;
 
   const pathName = usePathname();
   const router = useRouter();
@@ -53,11 +52,20 @@ function WebPlayback() {
         volume: 0.5,
       });
 
+      const trackId = pathName.split("/").pop();
+      let track = {} as any;
+      (async () => {
+        if (trackId) {
+          console.log("Track ID:", trackId);
+          track = await getTrack(trackId);
+        }
+      })();
+
       playerInstance.addListener("ready", async ({ device_id }: any) => {
         console.log("Ready with Device ID", device_id);
         await transferPlaybackHere(device_id, token);
         if (track && track.uri) {
-          playTrack(track.uri, token);
+          playTrack(track.uri, token, device_id);
         } else {
           console.warn("Track information not available.");
         }
@@ -75,10 +83,6 @@ function WebPlayback() {
 
         setCurrentTrack(state.track_window.current_track);
         setPaused(state.paused);
-
-        playerInstance.getCurrentState().then((state: any) => {
-          setActive(!!state);
-        });
       });
 
       playerInstance.connect().then((success: boolean) => {
@@ -99,24 +103,17 @@ function WebPlayback() {
     };
   }, []);
 
-  useEffect(() => {
-    if (player && track && track.uri) {
-      const token = localStorage.getItem("accessToken") as string;
-      playTrack(track.uri, token);
-    }
-  }, [track]);
+  // useEffect(() => {
+  //   if (player && track && track.uri) {
+  //     const token = localStorage.getItem("accessToken") as string;
+  //     playTrack(track.uri, token);
+  //   }
+  // }, [isActive]);
 
   async function getTrackFunc(id: string) {
     const response = await getTrack(id);
-    setTrack(response);
+    setActive(true);
   }
-
-  useEffect(() => {
-    const trackId = pathName.split("/").pop();
-    if (trackId) {
-      getTrackFunc(trackId);
-    }
-  }, [isPaused]);
 
   async function transferPlaybackHere(device_id: string, token: string) {
     const response = await fetch(`https://api.spotify.com/v1/me/player`, {
@@ -133,23 +130,31 @@ function WebPlayback() {
 
     if (!response.ok) {
       console.error("Failed to transfer playback", await response.json());
+    } else {
+      setActive(true);
+      console.log("Playback transferred successfully");
     }
   }
 
-  async function playTrack(uri: string, token: string) {
-    const response = await fetch(`https://api.spotify.com/v1/me/player/play`, {
-      method: "PUT",
-      body: JSON.stringify({
-        uris: [uri],
-      }),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+  async function playTrack(uri: string, token: string, device_id: string) {
+    const response = await fetch(
+      `https://api.spotify.com/v1/me/player/play?device_id=${device_id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify({
+          uris: [uri],
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     if (!response.ok) {
       console.error("Failed to play track", await response.json());
+    } else {
+      console.log("Track played successfully", uri);
     }
   }
 
