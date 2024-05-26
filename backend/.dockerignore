@@ -1,6 +1,8 @@
+.vscode
 .pyc
-.pyo
+__pycache__
 .git
 .gitignore
-.DS_Store
-.swp
+.env
+_config.yml
+docs
