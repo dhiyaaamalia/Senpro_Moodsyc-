@@ -48,6 +48,10 @@ const PlaylistList = () => {
     });
   };
 
+  const goToPlayback = ({ id }: any) => {
+    router.push(`/playback/${id}`);
+  };
+
   useEffect(() => {
     if (userState) {
       setUser(userState);
@@ -124,7 +128,14 @@ const PlaylistList = () => {
           <div className=" border-[1px] border-primary rounded-xl h-screen p-5">
             {playlistContent ? (
               playlistContent.map((item: any) => (
-                <div key={item.track.id} className="w-full flex flex-col">
+                <div
+                  key={item.track.id}
+                  onClick={() => {
+                    goToPlayback(item.track);
+                  }}
+                  className="w-full flex flex-col hover:bg-gray-100 p-2 rounded-lg gap-2 cursor-pointer
+                "
+                >
                   <p className="text-xl font-bold">
                     {item.track.name}{" "}
                     <span className="text-sm font-normal">
