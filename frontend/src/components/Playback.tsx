@@ -58,6 +58,7 @@ function WebPlayback() {
         if (trackId) {
           console.log("Track ID:", trackId);
           track = await getTrack(trackId);
+          setCurrentTrack(track);
         }
       })();
 
@@ -81,7 +82,6 @@ function WebPlayback() {
           return;
         }
 
-        setCurrentTrack(state.track_window.current_track);
         setPaused(state.paused);
       });
 
@@ -110,11 +110,6 @@ function WebPlayback() {
   //   }
   // }, [isActive]);
 
-  async function getTrackFunc(id: string) {
-    const response = await getTrack(id);
-    setActive(true);
-  }
-
   async function transferPlaybackHere(device_id: string, token: string) {
     const response = await fetch(`https://api.spotify.com/v1/me/player`, {
       method: "PUT",
@@ -137,24 +132,28 @@ function WebPlayback() {
   }
 
   async function playTrack(uri: string, token: string, device_id: string) {
-    const response = await fetch(
-      `https://api.spotify.com/v1/me/player/play?device_id=${device_id}`,
-      {
-        method: "PUT",
-        body: JSON.stringify({
-          uris: [uri],
-        }),
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const trackNow = pathName.split("/").pop();
+    const trackNew = uri.split(":").pop();
+    if (trackNow === trackNew) {
+      const response = await fetch(
+        `https://api.spotify.com/v1/me/player/play?device_id=${device_id}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            uris: [uri],
+          }),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    if (!response.ok) {
-      console.error("Failed to play track", await response.json());
-    } else {
-      console.log("Track played successfully", uri);
+      if (!response.ok) {
+        console.error("Failed to play track", await response.json());
+      } else {
+        console.log("Track played successfully", uri);
+      }
     }
   }
 
@@ -183,7 +182,7 @@ function WebPlayback() {
     return (
       <div className="flex items-center justify-center h-screen bg-background text-foreground">
         <div className="text-center">
-          <b>Loading Spotify Web Playback SDK...</b>
+          <b>Loading Spotify Web Playback</b>
         </div>
       </div>
     );

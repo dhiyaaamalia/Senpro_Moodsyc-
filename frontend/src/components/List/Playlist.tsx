@@ -1,11 +1,22 @@
 "use client";
-import { fetchSongPlaylist, fetchUserPlaylist } from "@/lib/spotify/spotify";
+import {
+  fetchSongPlaylist,
+  fetchUserPlaylist,
+  removeSongFromPlaylist,
+} from "@/lib/spotify/spotify";
 import { useAppSelector } from "@/lib/store";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { Button } from "../ui/button";
 import { CreatePlaylistDialog } from "../form/CreatePlaylistForm";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
+import RemoveDialog from "../Dialog/RemoveDialog";
+import { toast } from "../ui/use-toast";
 
 const PlaylistList = () => {
   const router = useRouter();
@@ -26,10 +37,19 @@ const PlaylistList = () => {
     const playlist = await fetchUserPlaylist();
     if (playlist) {
       setPlaylist(playlist.items);
-      setPlaylistActive({
-        name: playlist.items[0].name,
-        id: playlist.items[0].id,
-      });
+      for (let i = 0; i < playlist.items.length; i++) {
+        if (
+          userState &&
+          (userState as { display_name: string }).display_name ===
+            playlist.items[i].owner.display_name
+        ) {
+          setPlaylistActive({
+            name: playlist.items[i].name,
+            id: playlist.items[i].id,
+          });
+          break;
+        }
+      }
     }
   };
 
@@ -50,6 +70,16 @@ const PlaylistList = () => {
 
   const goToPlayback = ({ id }: any) => {
     router.push(`/playback/${id}`);
+  };
+
+  const removeSong = async (trackUri: string) => {
+    let res = await removeSongFromPlaylist(playlistActive.id, trackUri);
+
+    toast({
+      title: "Song removed from playlist",
+      description: `Your song has been removed from the playlist.`,
+    });
+    fetchPlaylist();
   };
 
   useEffect(() => {
@@ -113,7 +143,7 @@ const PlaylistList = () => {
               )}
             </div>
             <div className="w-full items-center flex justify-center">
-              <CreatePlaylistDialog />
+              <CreatePlaylistDialog setFetchStatus={setFetchStatus} />
             </div>
           </div>
         </div>
@@ -127,22 +157,47 @@ const PlaylistList = () => {
           </div>
           <div className=" border-[1px] border-primary rounded-xl h-screen p-5">
             {playlistContent ? (
-              playlistContent.map((item: any) => (
+              playlistContent.map((item: any, index: any) => (
                 <div
-                  key={item.track.id}
-                  onClick={() => {
-                    goToPlayback(item.track);
-                  }}
-                  className="w-full flex flex-col hover:bg-gray-100 p-2 rounded-lg gap-2 cursor-pointer
-                "
+                  key={`content-${index} `}
+                  className="flex flex-row w-full items-center gap-5 bg-white p-2 rounded-lg shadow-md mb-2"
                 >
-                  <p className="text-xl font-bold">
-                    {item.track.name}{" "}
-                    <span className="text-sm font-normal">
-                      by {item.track.artists[0].name}
-                    </span>
-                  </p>
-                  <div className="mt-2 mb-5 w-full h-[1px] bg-gray-500 rounded-full"></div>
+                  <img
+                    src={item.track.album.images[0].url}
+                    className="w-12 h-12 rounded-lg"
+                  />
+                  <div className="flex-auto">
+                    <h1
+                      onClick={() => goToPlayback({ id: item.track.id })}
+                      className="text-lg
+                            underline cursor-pointer
+                          "
+                    >
+                      {item.track.name}
+                    </h1>
+                    <h1 className="text-xs">by {item.track.artists[0].name}</h1>
+                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <RemoveDialog
+                          playlist={playlistActive.name}
+                          title={item.track.name}
+                          submit={() => removeSong(item.track.uri)}
+                        >
+                          <div
+                            className="bg-primary text-white rounded-lg w-[30px] h-[30px] flex items-center justify-center cursor-pointer"
+                            onClick={(e) => {}}
+                          >
+                            <Icon icon="gg:remove" />
+                          </div>
+                        </RemoveDialog>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Remove from playlist</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               ))
             ) : (

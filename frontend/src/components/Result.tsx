@@ -3,11 +3,19 @@ import { Chat } from "@/lib/features/data/dataSlice";
 import { useAppSelector } from "@/lib/store";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { use, useEffect, useState } from "react";
+import React, { LegacyRef, use, useEffect, useRef, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import { AlertCircle } from "lucide-react";
 import { AddToPlaylistDialog } from "./List/PlaylistDialog";
+import { Button } from "./ui/button";
+import { Icon } from "@iconify/react/dist/iconify.js";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip";
 
 const Result = () => {
   const [chatValue, setChatValue] = useState<Chat[]>([]);
@@ -16,8 +24,16 @@ const Result = () => {
   const chat = useAppSelector((state) => state.data.chat);
   const loading = useAppSelector((state) => state.data.loading);
   const user = useAppSelector((state) => state.auth.user);
-
+  const chatEndRef = useRef<HTMLElement | null>(null);
   const router = useRouter();
+
+  const scrollToBottom = () => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatValue]);
 
   useEffect(() => {
     setChatValue(chat);
@@ -46,7 +62,7 @@ const Result = () => {
             key={`input-${index}`}
             className="flex justify-end items-center w-full mb-5"
           >
-            <h1 className="text-xl bg-blue-200 rounded-3xl text-right px-5 py-2 max-w-md">
+            <h1 className="text-xl bg-blue-200 rounded-3xl text-right px-5 py-2 max-w-lg">
               {chat.content[0].name}
             </h1>
           </div>
@@ -57,7 +73,7 @@ const Result = () => {
           >
             {typeof chat.content === "string" ? (
               <h1 className="text-xl bg-gray-200 rounded-3xl text-left px-5 py-2 max-w-md">
-                chat.content
+                {chat.content}
               </h1>
             ) : (
               <div className="text-xl bg-gray-200 rounded-3xl text-left px-5 py-2 max-w-lg">
@@ -87,7 +103,25 @@ const Result = () => {
                           <h1 className="text-xs">by {content.artist}</h1>
                         </div>
                         <div>
-                          <AddToPlaylistDialog />
+                          {user === null ? (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <Button disabled className="cursor-default">
+                                    <Icon
+                                      className="bg-primary text-white rounded-lg w-[20px] h-[20px] cursor-default"
+                                      icon="carbon:add-filled"
+                                    />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Login to add to playlist</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ) : (
+                            <AddToPlaylistDialog song={content} />
+                          )}
                         </div>
                       </div>
                     );
@@ -101,7 +135,7 @@ const Result = () => {
 
       {loadingValue && (
         <div className="flex justify-start items-center w-full">
-          <h1 className="text-xl bg-gray-200 rounded-3xl text-left px-5 py-2 max-w-md">
+          <h1 className="text-xl bg-gray-200 rounded-3xl text-left px-5 py-2 max-w-md mb-5">
             Loading...
           </h1>
         </div>
@@ -119,6 +153,7 @@ const Result = () => {
           </AlertDescription>
         </Alert>
       )}
+      <div ref={chatEndRef as LegacyRef<HTMLDivElement>} />
     </div>
   );
 };

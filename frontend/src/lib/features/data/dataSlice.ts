@@ -6,6 +6,7 @@ export interface ChatContent {
   image: string;
   artist: string;
   message: string;
+  trackUri: string;
 }
 export interface Chat {
   type: string;
@@ -40,6 +41,7 @@ export const dataSlice = createSlice({
             image: "",
             artist: "",
             message: "",
+            trackUri: "",
           },
         ],
       });
