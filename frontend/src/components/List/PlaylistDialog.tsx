@@ -90,14 +90,12 @@ export function AddToPlaylistDialog({ song }: any) {
           (item: any) =>
             item.owner.display_name === user.display_name && (
               <ConfirmDialog
+                key={item.id}
                 playlist={item.name}
                 title={song.name}
                 submit={() => handleSubmit(item.id, song.trackUri)}
               >
-                <div
-                  key={item.id}
-                  className="p-2 flex w-full px-5 gap-3 mb-5 cursor-pointer"
-                >
+                <div className="p-2 flex w-full px-5 gap-3 mb-5 cursor-pointer">
                   <Icon
                     className="bg-primary text-white rounded-lg w-[30px] h-[30px]"
                     icon="mingcute:playlist-fill"
