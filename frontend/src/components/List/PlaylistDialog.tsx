@@ -88,7 +88,7 @@ export function AddToPlaylistDialog({ song }: any) {
         </DialogHeader>
         {playlist?.map(
           (item: any) =>
-            item.owner.display_name === user.display_name && (
+            item.owner.display_name === (userState as any)?.display_name && (
               <ConfirmDialog
                 key={item.id}
                 playlist={item.name}
