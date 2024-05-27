@@ -33,12 +33,13 @@ export async function getAccessToken(code: string) {
   const verifier = localStorage.getItem("verifier");
   const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID as string;
   const clientSecret = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_SECRET as string;
+  const callback = process.env.NEXT_PUBLIC_SPOTIFY_CALLBACK as string;
 
   const params = new URLSearchParams();
   params.append("client_id", clientId);
   params.append("grant_type", "authorization_code");
   params.append("code", code);
-  params.append("redirect_uri", "http://localhost:3000/auth/");
+  params.append("redirect_uri", callback);
   params.append("code_verifier", verifier!);
   params.append("client_secret", clientSecret);
 
