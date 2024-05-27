@@ -16,6 +16,10 @@ load_dotenv()
 client_id = os.getenv('NEXT_PUBLIC_SPOTIFY_CLIENT_ID')
 client_secret = os.getenv('NEXT_PUBLIC_SPOTIFY_CLIENT_SECRET')
 
+@app.route('/', methods=['GET'])
+def home():
+    return jsonify({"message": "Hello, World!"})
+
 
 @app.route('/search', methods=['POST'])
 def search_song_titles():
