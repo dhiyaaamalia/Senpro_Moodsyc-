@@ -9,6 +9,7 @@ function saveTokenToLocalStorage(responseData: any) {
 
 export async function redirectToAuthCodeFlow() {
   const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID as string;
+  const callback = process.env.NEXT_PUBLIC_SPOTIFY_CALLBACK as string;
   const verifier = generateCodeVerifier(128);
   const challenge = await generateCodeChallenge(verifier);
 
@@ -20,7 +21,7 @@ export async function redirectToAuthCodeFlow() {
   const params = new URLSearchParams();
   params.append("client_id", clientId);
   params.append("response_type", "code");
-  params.append("redirect_uri", "http://localhost:3000/auth/");
+  params.append("redirect_uri", callback);
   params.append("scope", scope);
   params.append("code_challenge_method", "S256");
   params.append("code_challenge", challenge);
