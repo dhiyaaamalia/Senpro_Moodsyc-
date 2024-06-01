@@ -55,6 +55,7 @@ export const dataSlice = createSlice({
     },
 
     clearState: (state) => {
+      localStorage.clear();
       state.chat = [];
     },
   },

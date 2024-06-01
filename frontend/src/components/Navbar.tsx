@@ -25,7 +25,7 @@ const Navbar = () => {
     window.location.reload();
   };
 
-  const handleToPlaylist = user ? "/playlist" : "/auth";
+  const handleToPlaylist = user ? "/profile" : "/auth";
 
   useEffect(() => {
     setInputValue(chat);

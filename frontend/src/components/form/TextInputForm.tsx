@@ -8,6 +8,7 @@ import axios from "axios";
 const TextInputForm = () => {
   const dispatch = useAppDispatch();
   const [inputValue, setInputValue] = useState("");
+  const url = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     if (inputValue.length !== 0) {
@@ -15,8 +16,9 @@ const TextInputForm = () => {
       dispatch(addInput(inputValue));
       setInputValue("");
       dispatch(setLoading(true));
+
       axios
-        .post("http://127.0.0.1:5000/search", { query: inputValue })
+        .post(`${url}/search`, { query: inputValue })
         .then((response) => {
           let data = response.data;
           console.log(data);
