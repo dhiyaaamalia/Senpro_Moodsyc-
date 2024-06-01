@@ -26,6 +26,7 @@ export const authSlice = createSlice({
       state.error = action.payload;
     },
     clearState: (state) => {
+      localStorage.clear();
       state.user = null;
       state.loading = false;
       state.error = null;
